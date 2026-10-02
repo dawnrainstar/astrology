@@ -238,6 +238,139 @@ Provide a detailed, highly accurate Astrological & Numerological Analysis:
   }
 });
 
+// Personalized Daily Horoscope AI Endpoint
+app.post("/api/divination/daily-horoscope", async (req, res) => {
+  try {
+    const {
+      birthDate,
+      birthTime,
+      birthPlace,
+      targetDate,
+      focusArea,
+      userName,
+      userTier
+    } = req.body;
+
+    if (!birthDate) {
+      return res.status(400).json({ error: "Birth date is required for generating a personalized daily horoscope." });
+    }
+
+    const ai = getGenAI();
+
+    // Helper to calculate Sun Sign
+    const parseBirth = (bDate: string) => {
+      const parts = bDate.split("-");
+      if (parts.length === 3) {
+        const m = parseInt(parts[1], 10);
+        const d = parseInt(parts[2], 10);
+        const y = parseInt(parts[0], 10);
+        
+        let sign = "Aries";
+        if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) sign = "Aries";
+        else if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) sign = "Taurus";
+        else if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) sign = "Gemini";
+        else if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) sign = "Cancer";
+        else if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) sign = "Leo";
+        else if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) sign = "Virgo";
+        else if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) sign = "Libra";
+        else if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) sign = "Scorpio";
+        else if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) sign = "Sagittarius";
+        else if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) sign = "Capricorn";
+        else if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) sign = "Aquarius";
+        else sign = "Pisces";
+
+        const elements: Record<string, string> = {
+          Aries: "Fire", Leo: "Fire", Sagittarius: "Fire",
+          Taurus: "Earth", Virgo: "Earth", Capricorn: "Earth",
+          Gemini: "Air", Libra: "Air", Aquarius: "Air",
+          Cancer: "Water", Scorpio: "Water", Pisces: "Water"
+        };
+
+        return {
+          sign,
+          element: elements[sign] || "Ether",
+          month: m,
+          day: d,
+          year: y
+        };
+      }
+      return { sign: "Aries", element: "Fire", month: 1, day: 1, year: 2000 };
+    };
+
+    const natal = parseBirth(birthDate);
+    const forecastDate = targetDate || new Date().toISOString().split("T")[0];
+
+    const prompt = `You are a Revered Celestial Astrologer, Master of the Hermetic Zodiac, and Cosmic Guide.
+A seeker has requested their personalized Daily Astrological Forecast & Horoscope.
+
+SEEKER NATAL PROFILE:
+- Seeker Name: ${userName || "Seeker"}
+- Birth Date: ${birthDate}
+- Birth Time: ${birthTime || "Not specified (approx. solar noon)"}
+- Birth Place: ${birthPlace || "Earth"}
+- Primary Sun Sign: ${natal.sign}
+- Dominant Natal Element: ${natal.element}
+- Account Tier: ${userTier || "Seeker"}
+
+FORECAST PARAMETERS:
+- Forecast Date: ${forecastDate}
+- Core Focus Area: ${focusArea || "Holistic Cosmic Forecast"}
+
+Generate a rich, deeply personalized, uplifting, and actionable daily horoscope forecast.
+Organize the reading with elegant markdown formatting, using clear evocative headers and bullet points:
+
+1. **🌟 Cosmic Atmosphere & Celestial Transits Today**
+   - Synthesize the major cosmic weather active for ${forecastDate}, detailing how current planetary transits interact specifically with the seeker's ${natal.sign} Sun and ${natal.element} element.
+
+2. **🔮 Personalized Astrological Forecast for ${natal.sign}**
+   - Direct, intuitive, and profound guidance written specifically for this seeker based on their birth date.
+   - Address their current life path, interpersonal dynamics, emotional landscape, and subconscious currents.
+   ${focusArea && focusArea !== "Holistic Cosmic Forecast" ? `- Special deep dive into the chosen focus realm: **${focusArea}**.` : ""}
+
+3. **✨ Cosmic Energy Meters & Daily Vibrations**
+   Provide an energetic calibration for today in percentage format (e.g. 88%):
+   - **Love & Sacred Connection**: [Score %] - [Brief 1-sentence intuitive note]
+   - **Ambition, Career & Abundance**: [Score %] - [Brief 1-sentence intuitive note]
+   - **Intuition, Magic & Spiritual Clarity**: [Score %] - [Brief 1-sentence intuitive note]
+   - **Vitality, Health & Prana**: [Score %] - [Brief 1-sentence intuitive note]
+
+4. **🪐 Celestial Correspondences & Lucky Alignments**
+   - **Power Color for Today**: (e.g. Deep Amethyst, Solar Gold, Emerald Velvet) with its esoteric meaning
+   - **Lucky Numbers**: (e.g. 7, 21, 33)
+   - **Talismanic Gemstone / Crystal**: (e.g. Lapis Lazuli, Moonstone, Carnelian)
+   - **Ruling Planetary Current**: (e.g. Venus in harmonious trine, Mars empowering fortitude)
+   - **Optimal Cosmic Window (Golden Hour)**: (e.g. 10:30 AM - 12:00 PM / Twilight 7:15 PM) for important discussions, creative work, or ritual
+
+5. **🕯️ Daily Celestial Affirmation & Planetary Mantram**
+   - A poetic 2-line chant or decree for the seeker to ground their energy today.
+
+Maintain an elevated, wise, compassionate, and mystical tone. Be specific, insightful, and practical.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+      },
+    });
+
+    res.json({
+      forecast: response.text,
+      natal: {
+        sign: natal.sign,
+        element: natal.element,
+        birthDate,
+        birthTime,
+        birthPlace,
+        targetDate: forecastDate
+      }
+    });
+  } catch (err: any) {
+    console.error("Error generating Daily Horoscope:", err);
+    res.status(500).json({ error: err.message || "Failed to generate Daily Horoscope." });
+  }
+});
+
 // Sacred Sigil AI Empowerment Endpoint
 app.post("/api/divination/sigil", async (req, res) => {
   try {
@@ -268,6 +401,73 @@ Provide an empowering ritual guide for activating this newly forged Sacred Sigil
   } catch (err: any) {
     console.error("Error generating Sigil guidance:", err);
     res.status(500).json({ error: err.message || "Failed to generate Sigil guidance." });
+  }
+});
+
+// OmniOracle AI Chat & Support Assistant Endpoint
+app.post("/api/oracle/chat", async (req, res) => {
+  try {
+    const { messages, userContext, supportPhone } = req.body;
+    const ai = getGenAI();
+
+    const phoneContact = supportPhone || "+1 (555) 792-7478";
+    const isPaidSubscriber = userContext?.isPaidSubscriber || userContext?.tier === 'creator' || userContext?.tier === 'premium' || userContext?.tier === 'founder';
+
+    const systemInstruction = `You are the OmniOracle Divine Intelligence Guide & Support Assistant.
+You have two distinct, strictly defined responsibilities:
+
+1. DEDICATED AI DIVINATION SCHOLAR & READING ADVISOR (HANDLES ALL DIVINATION QUESTIONS):
+- YOU (THE AI) ANSWER ALL DIVINATION QUESTIONS.
+- Provide comprehensive, deeply intuitive, and hermetically grounded answers for:
+  * Tarot readings (all 78 cards, Major & Minor Arcana, suits, Rider-Waite symbolism, upright vs reversed meanings, spreads).
+  * I-Ching (all 64 hexagrams, changing lines, upper and lower trigrams, Taoist philosophy).
+  * Elder Futhark runes (24 staves + Wyrd, phonetic meanings, aettir, deities, upright and merkstave polarities).
+  * Astrology & Daily Horoscopes (natal charts, Sun/Moon/Rising signs, transits, planets, houses, aspects).
+  * Pythagorean Numerology (Life Path, Expression, Soul Urge, Personal Year).
+  * Obsidian Scrying Mirror visions and Sacred Sigils (Kameas, Rose Cross, sacred geometry).
+- If the seeker asks about their recent readings, refer directly to their saved journal context.
+- CRITICAL BOUNDARY: The creator Dawn Milazzo does NOT answer divination or reading questions by phone. If a seeker asks if they can call Dawn to interpret a card or reading, politely clarify that phone support is strictly for billing/account questions, and that YOU (the AI Oracle) are the dedicated master scholar built specifically to answer any and all divination questions 24/7 right here in this chat!
+
+2. BILLING, REFUNDS, & SUBSCRIBER PHONE SUPPORT:
+- SUBSCRIBER-ONLY PHONE POLICY:
+  * Phone support with Dawn Milazzo (${phoneContact}) is an exclusive perk strictly for ACTIVE PAID SUBSCRIBERS (Premium $10/mo, Founder $99 Lifetime, or Creator).
+  * Free tier users cannot call; they must have an active paid subscription to access the direct phone line.
+  * DAWN ONLY ANSWERS BILLING QUESTIONS & REFUND ASSISTANCE BY PHONE (NO DIVINATION QUESTIONS).
+- REFUNDS POLICY (CRITICAL MANDATE):
+  * ALL REFUND REQUESTS ARE 100% UNCONDITIONALLY GRANTED WITH ZERO FRICTION.
+  * If a user asks for a refund or has any billing issue, immediately and warmly reassure them: "Your refund request is approved and fully granted."
+  * Explain that the refund is processed back to their original payment method (PayPal or Credit/Debit Card) typically within 3-5 business days.
+  * If they are a paid subscriber and want to discuss their billing or refund over the phone, they can call Dawn directly at: ${phoneContact}.
+  * If they are not a paid subscriber, explain that refunds are handled automatically right here with 100% approval.
+
+CURRENT SEEKER CONTEXT:
+- Seeker Name: ${userContext?.name || "Seeker"}
+- Email: ${userContext?.email || "Guest"}
+- Plan / Status: ${userContext?.tier === 'creator' ? 'Oracle Keeper 👑 (Creator)' : userContext?.tier === 'premium' ? '✨ Premium Subscriber ($10/mo)' : userContext?.tier === 'founder' ? '🌟 Founder Tier' : 'Free Tier'}
+- Paid Subscriber Status: ${isPaidSubscriber ? "YES (Has phone support access for billing/refunds)" : "NO (Free seeker - phone line locked to paid subscribers)"}
+- Recent Readings from Seeker's Journal:
+${userContext?.recentReadings && userContext.recentReadings.length > 0 ? JSON.stringify(userContext.recentReadings, null, 2) : "No saved readings yet."}
+
+Tone: Wise, compassionate, respectful, mystically grounded for divination, warm and prompt for billing, with crystal-clear boundaries regarding phone support. Format with clean markdown.`;
+
+    const chatContents = messages.map((m: any) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: chatContents,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      },
+    });
+
+    res.json({ reply: response.text });
+  } catch (err: any) {
+    console.error("Error in Oracle AI Chat:", err);
+    res.status(500).json({ error: err.message || "Failed to communicate with Oracle AI." });
   }
 });
 

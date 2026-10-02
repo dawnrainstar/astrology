@@ -1,6 +1,7 @@
 export type DivinationTab =
   | 'home'
   | 'tarot'
+  | 'horoscope'
   | 'iching'
   | 'runes'
   | 'scrying'
@@ -13,6 +14,10 @@ export interface UserAccount {
   id: string;
   email: string;
   name: string;
+  birthDate?: string; // YYYY-MM-DD
+  birthTime?: string; // HH:MM (optional)
+  birthPlace?: string; // City, Country (optional)
+  zodiacSign?: string;
   passwordHash?: string;
   tier: SubscriptionTier;
   subscriptionActive: boolean;

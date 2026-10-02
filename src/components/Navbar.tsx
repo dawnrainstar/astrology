@@ -16,7 +16,10 @@ import {
   User,
   Home,
   LogOut,
-  Lock
+  Lock,
+  MessageSquare,
+  Phone,
+  Star
 } from 'lucide-react';
 import { soundEngine } from '../utils/audio';
 
@@ -31,6 +34,7 @@ interface NavbarProps {
   onOpenAuth: () => void;
   onOpenProfile: () => void;
   onOpenSubscribe: () => void;
+  onOpenChatSupport: () => void;
   onSignOut: () => void;
 }
 
@@ -45,6 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
   onOpenProfile,
   onOpenSubscribe,
+  onOpenChatSupport,
   onSignOut
 }) => {
   const isPremium = hasPremiumAccess(currentUser);
@@ -59,6 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const tabs: { id: DivinationTab; label: string; icon: React.ReactNode; isPremiumOnly?: boolean }[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-3.5 h-3.5" /> },
     { id: 'tarot', label: 'Tarot', icon: <BookOpen className="w-3.5 h-3.5" /> },
+    { id: 'horoscope', label: 'Horoscope', icon: <Star className="w-3.5 h-3.5" /> },
     { id: 'runes', label: 'Runes', icon: <Sparkles className="w-3.5 h-3.5" /> },
     { id: 'iching', label: 'I-Ching', icon: <Compass className="w-3.5 h-3.5" /> },
     { id: 'scrying', label: 'Scrying', icon: <Eye className="w-3.5 h-3.5" />, isPremiumOnly: true },
@@ -184,6 +190,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-1.5 rounded-lg border border-amber-500/30 bg-amber-950/30 text-amber-300 hover:bg-amber-900/40 transition-all flex items-center gap-1 cursor-pointer"
           >
             <History className="w-4 h-4" />
+          </button>
+
+          {/* AI Chat & Phone Support */}
+          <button
+            onClick={() => {
+              soundEngine.playSingingBowl(432);
+              onOpenChatSupport();
+            }}
+            title="AI Oracle Chat, Billing, Refunds & Phone Support"
+            className="p-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 hover:bg-amber-900/50 hover:border-amber-400 transition-all flex items-center gap-1 text-xs cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.2)]"
+          >
+            <MessageSquare className="w-4 h-4 text-amber-400 animate-pulse" />
+            <span className="hidden xl:inline text-[11px] font-medium">AI Support & Call</span>
           </button>
 
           {/* Subscribe $10/month button (shown if not premium / creator) */}

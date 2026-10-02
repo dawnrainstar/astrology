@@ -5,9 +5,11 @@ import {
   isOwner,
   cancelUserSubscription,
   setCurrentUser,
+  updateUserProfile,
   getTodayDateString,
   OWNER_EMAIL
 } from '../utils/auth';
+import { calculateSunSign } from '../data/astrologyData';
 import { soundEngine } from '../utils/audio';
 import {
   X,
@@ -23,7 +25,12 @@ import {
   AlertTriangle,
   History,
   Shield,
-  ArrowUpRight
+  ArrowUpRight,
+  Phone,
+  PhoneCall,
+  Star,
+  Check,
+  Compass
 } from 'lucide-react';
 
 interface AccountProfileModalProps {
@@ -48,6 +55,12 @@ export const AccountProfileModal: React.FC<AccountProfileModalProps> = ({
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
 
+  // Natal Coordinates for Personalized Horoscopes & Astrology
+  const [birthDate, setBirthDate] = useState<string>(currentUser.birthDate || '1992-06-15');
+  const [birthTime, setBirthTime] = useState<string>(currentUser.birthTime || '12:00');
+  const [birthPlace, setBirthPlace] = useState<string>(currentUser.birthPlace || '');
+  const [natalSaved, setNatalSaved] = useState<boolean>(false);
+
   if (!isOpen) return null;
 
   const isCreator = isOwner(currentUser);
@@ -55,6 +68,37 @@ export const AccountProfileModal: React.FC<AccountProfileModalProps> = ({
   const today = getTodayDateString();
   const readingsToday = currentUser.lastReadingDate === today ? (currentUser.readingsTodayCount || 0) : 0;
   const remainingFree = Math.max(0, 3 - readingsToday);
+
+  const getDerivedSign = (dateStr: string) => {
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        return calculateSunSign(month, day);
+      }
+    } catch (e) {}
+    return 'Aries';
+  };
+
+  const handleSaveNatalCoordinates = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const calculatedSign = getDerivedSign(birthDate);
+      const updated = updateUserProfile(currentUser.id, {
+        birthDate,
+        birthTime,
+        birthPlace,
+        zodiacSign: calculatedSign
+      });
+      onUserUpdated(updated);
+      setNatalSaved(true);
+      soundEngine.playSingingBowl(528);
+      setTimeout(() => setNatalSaved(false), 3000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update natal profile');
+    }
+  };
 
   // Quick Switcher to allow instant perspective testing
   const switchAccountType = (tier: 'creator' | 'premium' | 'free') => {
@@ -238,6 +282,94 @@ export const AccountProfileModal: React.FC<AccountProfileModalProps> = ({
             </div>
           </div>
 
+          {/* Natal Coordinates & Birth Date (For Personalized Horoscopes & Astrology) */}
+          <div className="rounded-xl bg-slate-900/80 border border-amber-900/40 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-400" />
+                <h4 className="font-serif font-bold text-sm text-amber-200">
+                  Natal Coordinates & Birth Date
+                </h4>
+              </div>
+              <span className="text-[10px] font-mono text-amber-300 bg-amber-950/70 border border-amber-500/30 px-2 py-0.5 rounded">
+                Personalized Horoscope Active
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Your birth date powers your <strong>Daily Horoscope</strong> and natal chart forecasts. Update your birth data anytime:
+            </p>
+
+            <form onSubmit={handleSaveNatalCoordinates} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1 font-mono">
+                    Birth Date (Required)
+                  </label>
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    required
+                    className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1 font-mono">
+                    Birth Time (Optional)
+                  </label>
+                  <input
+                    type="time"
+                    value={birthTime}
+                    onChange={(e) => setBirthTime(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 font-mono text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-slate-400 mb-1 font-mono">
+                  Birth Place / City (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. San Francisco, CA or London, UK"
+                  value={birthPlace}
+                  onChange={(e) => setBirthPlace(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                />
+              </div>
+
+              {/* Derived Astrological Sign Badge */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Sun Sign:</span>
+                  <span className="font-serif font-bold text-amber-300 text-xs flex items-center gap-1 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded">
+                    <span>✨</span>
+                    <span>{getDerivedSign(birthDate)}</span>
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.2)]"
+                >
+                  {natalSaved ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Saved!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Compass className="w-3.5 h-3.5" />
+                      <span>Update Natal Profile</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
           {/* Subscription Action Section */}
           <div className="space-y-3">
             {!currentUser.subscriptionActive && !isCreator ? (
@@ -271,8 +403,19 @@ export const AccountProfileModal: React.FC<AccountProfileModalProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
                   <span className="text-slate-400">Payment on file:</span>
-                  <span className="font-mono text-slate-200">
-                    {currentUser.paymentMethod?.brand || 'Visa'} ending in {currentUser.paymentMethod?.last4 || '4242'}
+                  <span className="font-mono text-slate-200 flex items-center gap-1.5">
+                    {currentUser.paymentMethod?.brand === 'PayPal' ? (
+                      <>
+                        <span className="font-sans font-black italic tracking-tighter text-[11px] bg-[#003087] text-white px-1.5 py-0.5 rounded">
+                          Pay<span className="text-[#0079C1]">Pal</span>
+                        </span>
+                        <span>{currentUser.paymentMethod.last4}</span>
+                      </>
+                    ) : (
+                      <span>
+                        {currentUser.paymentMethod?.brand || 'Visa'} ending in {currentUser.paymentMethod?.last4 || '4242'}
+                      </span>
+                    )}
                   </span>
                 </div>
 
@@ -306,6 +449,87 @@ export const AccountProfileModal: React.FC<AccountProfileModalProps> = ({
                 )}
               </div>
             )}
+          </div>
+
+          {/* Creator Phone Support & Refund Policy Card */}
+          <div className="rounded-xl border border-amber-500/40 bg-gradient-to-br from-[#121528] to-[#171a33] p-4 space-y-3 text-xs shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-amber-200 flex items-center gap-1.5">
+                <PhoneCall className="w-4 h-4 text-amber-400" />
+                <span>Direct Creator Phone Support & Customer Service</span>
+              </span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/70 border border-emerald-500/40 px-2 py-0.5 rounded">
+                100% Refunds Granted
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3.5 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+              <div className="relative shrink-0">
+                <img
+                  src="/src/assets/images/dawn_milazzo_photo_1790974327929.jpg"
+                  alt="Dawn Milazzo - Customer Service"
+                  className="w-14 h-14 rounded-xl object-cover border-2 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
+                  referrerPolicy="no-referrer"
+                />
+                <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 flex items-center justify-center text-[9px] font-black ${
+                  isCreator || currentUser.subscriptionActive ? 'bg-emerald-500 text-slate-950' : 'bg-amber-500 text-slate-950'
+                }`}>
+                  {isCreator || currentUser.subscriptionActive ? '✓' : '🔒'}
+                </span>
+              </div>
+
+              <div className="space-y-1.5 flex-1">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="font-serif font-bold text-amber-200 text-sm">Dawn Milazzo</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/50 text-amber-300">
+                      Creator & Billing Lead
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded">
+                    Billing Questions Only
+                  </span>
+                </div>
+
+                <p className="text-slate-300 text-[11px] leading-relaxed">
+                  Dawn provides direct phone support for <strong>billing, subscription management, and refund assistance only</strong> (no divination questions by phone).
+                </p>
+
+                {isCreator || currentUser.subscriptionActive ? (
+                  <div className="flex items-center gap-3 pt-1 flex-wrap">
+                    <a
+                      href={`tel:${localStorage.getItem('omni_oracle_support_phone') || '+1 (555) 792-7478'}`}
+                      className="text-amber-300 font-mono font-bold hover:underline flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1 rounded text-xs"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{localStorage.getItem('omni_oracle_support_phone') || '+1 (555) 792-7478'}</span>
+                    </a>
+                    <span className="text-slate-500 text-[11px] font-mono">dawnmilazzo7@gmail.com</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                    <span className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+                      <span>🔒</span>
+                      <span>+1 (555) •••-•••• (Paid Subscribers Only)</span>
+                    </span>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        onOpenSubscribe();
+                      }}
+                      className="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-[11px] cursor-pointer hover:from-amber-400 hover:to-amber-500 transition-all"
+                    >
+                      Unlock Phone Line • $10/mo
+                    </button>
+                  </div>
+                )}
+
+                <div className="pt-1 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span><strong>Divination questions:</strong> Our AI Divination Scholar answers all Tarot, Rune, and Astrology questions 24/7 in chat!</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Quick Perspective Switcher for Testing (Useful for evaluators & Dawn) */}

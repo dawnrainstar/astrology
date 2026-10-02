@@ -117,7 +117,7 @@ export const ReadingHistoryModal: React.FC<ReadingHistoryModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
-            {['all', 'tarot', 'iching', 'runes', 'scrying', 'astrology', 'sigil'].map((type) => (
+            {['all', 'tarot', 'horoscope', 'iching', 'runes', 'scrying', 'astrology', 'sigil'].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}

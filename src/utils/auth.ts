@@ -19,6 +19,10 @@ function getSeedUsers(): UserAccount[] {
       id: 'usr_owner_dawn',
       email: OWNER_EMAIL,
       name: 'Dawn Milazzo',
+      birthDate: '1988-07-07',
+      birthTime: '11:11',
+      birthPlace: 'San Francisco, CA',
+      zodiacSign: 'Cancer',
       tier: 'creator',
       subscriptionActive: true,
       subscriptionPlan: 'creator',
@@ -37,6 +41,10 @@ function getSeedUsers(): UserAccount[] {
       id: 'usr_demo_seeker',
       email: 'seeker@omnioracle.app',
       name: 'Mystic Seeker',
+      birthDate: '1996-10-24',
+      birthTime: '08:45',
+      birthPlace: 'Austin, TX',
+      zodiacSign: 'Scorpio',
       tier: 'free',
       subscriptionActive: false,
       createdAt: '2026-03-01T00:00:00.000Z',
@@ -47,6 +55,10 @@ function getSeedUsers(): UserAccount[] {
       id: 'usr_demo_premium',
       email: 'premium@omnioracle.app',
       name: 'Cassandra Star',
+      birthDate: '1994-03-25',
+      birthTime: '19:30',
+      birthPlace: 'London, UK',
+      zodiacSign: 'Aries',
       tier: 'premium',
       subscriptionActive: true,
       subscriptionPlan: 'monthly',
@@ -353,6 +365,28 @@ export function cancelUserSubscription(userId: string): UserAccount {
     subscriptionActive: false,
     subscriptionPlan: undefined,
     subscriptionEnd: undefined
+  };
+
+  users[idx] = updated;
+  saveAllUsers(users);
+  setCurrentUser(updated);
+  return updated;
+}
+
+// Update user profile fields (birth date, birth time, birth place, etc.)
+export function updateUserProfile(userId: string, updates: Partial<UserAccount>): UserAccount {
+  const users = getAllUsers();
+  const idx = users.findIndex(u => u.id === userId);
+  if (idx === -1) {
+    throw new Error('User not found.');
+  }
+
+  const user = users[idx];
+  const updated: UserAccount = {
+    ...user,
+    ...updates,
+    id: user.id,
+    email: user.email
   };
 
   users[idx] = updated;

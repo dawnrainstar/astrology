@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DivinationTab, SavedReading, UserAccount } from './types';
-import { getCurrentUser, signOutUser, recordReadingPerformed } from './utils/auth';
+import { getCurrentUser, signOutUser, recordReadingPerformed, cancelUserSubscription } from './utils/auth';
 import { loadUserReadings, saveUserReadings } from './utils/readingStore';
 import { Navbar } from './components/Navbar';
 import { LandingHero } from './components/LandingHero';
 import { TarotSection } from './components/TarotSection';
+import { DailyHoroscopeSection } from './components/DailyHoroscopeSection';
 import { IChingSection } from './components/IChingSection';
 import { RuneSection } from './components/RuneSection';
 import { ScryingMirrorSection } from './components/ScryingMirrorSection';
@@ -16,7 +17,9 @@ import { AuthModal } from './components/AuthModal';
 import { AccountProfileModal } from './components/AccountProfileModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { PremiumGateModal } from './components/PremiumGateModal';
-import { Sparkles, Crown, Shield } from 'lucide-react';
+import { OracleChatSupportModal } from './components/OracleChatSupportModal';
+import { FloatingChatOrb } from './components/FloatingChatOrb';
+import { Sparkles, Crown, Shield, Phone, MessageSquare } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<DivinationTab>('home');
@@ -30,6 +33,8 @@ export default function App() {
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState<boolean>(false);
   const [isGateOpen, setIsGateOpen] = useState<boolean>(false);
+  const [isChatSupportOpen, setIsChatSupportOpen] = useState<boolean>(false);
+
   const [gateFeature, setGateFeature] = useState<{ name: string; reason: 'limit' | 'feature' }>({
     name: 'AI Master Divination',
     reason: 'feature'
@@ -89,6 +94,15 @@ export default function App() {
     setCurrentUser(null);
   };
 
+  const handleRefundGranted = () => {
+    if (currentUser && currentUser.tier !== 'creator') {
+      try {
+        const updated = cancelUserSubscription(currentUser.id);
+        setCurrentUser(updated);
+      } catch (e) {}
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b0d17] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950 flex flex-col justify-between relative overflow-x-hidden">
       {/* Background Starlight & Nebula Glows */}
@@ -108,6 +122,7 @@ export default function App() {
           onOpenAuth={() => setIsAuthOpen(true)}
           onOpenProfile={() => setIsProfileOpen(true)}
           onOpenSubscribe={() => setIsSubscribeOpen(true)}
+          onOpenChatSupport={() => setIsChatSupportOpen(true)}
           onSignOut={handleSignOut}
         />
 
@@ -128,6 +143,17 @@ export default function App() {
               currentUser={currentUser}
               onRequireUpgrade={handleRequireUpgrade}
               onReadingPerformed={handleReadingPerformed}
+            />
+          )}
+
+          {activeTab === 'horoscope' && (
+            <DailyHoroscopeSection
+              onSaveReading={handleSaveReading}
+              currentUser={currentUser}
+              onUserUpdated={(u) => setCurrentUser(u)}
+              onRequireUpgrade={handleRequireUpgrade}
+              onReadingPerformed={handleReadingPerformed}
+              onOpenChatSupport={() => setIsChatSupportOpen(true)}
             />
           )}
 
@@ -178,6 +204,12 @@ export default function App() {
         </main>
       </div>
 
+      {/* Floating AI Chat & Phone Support Trigger Orb */}
+      <FloatingChatOrb
+        isOpen={isChatSupportOpen}
+        onClick={() => setIsChatSupportOpen(true)}
+      />
+
       {/* Footer */}
       <footer className="border-t border-amber-900/20 bg-[#090b14]/80 py-6 text-center text-xs text-slate-500 relative z-10 mt-12">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -187,7 +219,20 @@ export default function App() {
             <span className="text-slate-600">| Hermetic Divination System</span>
           </div>
 
-          <div className="flex items-center gap-4 text-slate-500 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-slate-500 text-[11px]">
+            <button
+              onClick={() => setIsChatSupportOpen(true)}
+              className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1.5 font-medium cursor-pointer"
+            >
+              <img
+                src="/src/assets/images/dawn_milazzo_photo_1790974327929.jpg"
+                alt="Dawn Milazzo Customer Service"
+                className="w-5 h-5 rounded-full object-cover border border-amber-400 shadow-sm"
+                referrerPolicy="no-referrer"
+              />
+              <span>Dawn Milazzo Support & Phone</span>
+            </button>
+            <span>•</span>
             <button
               onClick={() => setIsSubscribeOpen(true)}
               className="hover:text-amber-300 transition-colors"
@@ -264,6 +309,16 @@ export default function App() {
         onOpenSubscribe={() => setIsSubscribeOpen(true)}
         featureName={gateFeature.name}
         reason={gateFeature.reason}
+      />
+
+      {/* AI Oracle Chat & Phone Support Modal */}
+      <OracleChatSupportModal
+        isOpen={isChatSupportOpen}
+        onClose={() => setIsChatSupportOpen(false)}
+        currentUser={currentUser}
+        recentReadings={savedReadings}
+        onRefundGranted={handleRefundGranted}
+        onOpenSubscribe={() => setIsSubscribeOpen(true)}
       />
     </div>
   );

@@ -14,7 +14,9 @@ import {
   Lock,
   Star,
   Zap,
-  Flame
+  Flame,
+  Phone,
+  PhoneCall
 } from 'lucide-react';
 import { soundEngine } from '../utils/audio';
 
@@ -51,6 +53,15 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       icon: <BookOpen className="w-6 h-6 text-amber-400" />,
       tier: 'free',
       badge: 'Free Spreads + AI'
+    },
+    {
+      id: 'horoscope',
+      title: 'Daily Horoscope',
+      subtitle: 'Personalized Astrological Forecast',
+      description: 'Channel tailored daily astrological insights, planetary transits, love & career meters, and lucky correspondences calibrated to your birth date.',
+      icon: <Star className="w-6 h-6 text-amber-400" />,
+      tier: 'free',
+      badge: '✨ Natal Transits + AI'
     },
     {
       id: 'runes',
@@ -137,11 +148,15 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             &ldquo;Unlock the hidden language of fate.&rdquo;
           </p>
 
-          {/* Six Pillar Bullet Showcase */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto py-3 text-sm text-slate-300">
+          {/* Seven Divination Pillars Showcase */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 max-w-3xl mx-auto py-3 text-sm text-slate-300">
             <div className="flex items-center justify-center gap-1.5 bg-slate-900/60 border border-amber-900/30 rounded-xl py-2 px-3">
               <span className="text-amber-400">✨</span>
               <span className="font-medium text-xs sm:text-sm">Tarot Readings</span>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 bg-slate-900/60 border border-amber-500/40 bg-amber-950/20 rounded-xl py-2 px-3">
+              <span className="text-amber-300">⭐</span>
+              <span className="font-medium text-xs sm:text-sm text-amber-200">Daily Horoscope</span>
             </div>
             <div className="flex items-center justify-center gap-1.5 bg-slate-900/60 border border-amber-900/30 rounded-xl py-2 px-3">
               <span className="text-amber-400">✨</span>
@@ -162,6 +177,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             <div className="flex items-center justify-center gap-1.5 bg-slate-900/60 border border-purple-900/40 rounded-xl py-2 px-3">
               <span className="text-purple-400">✨</span>
               <span className="font-medium text-xs sm:text-sm">Sacred Sigil Creation</span>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 bg-slate-900/60 border border-amber-900/30 rounded-xl py-2 px-3">
+              <span className="text-amber-400">💬</span>
+              <span className="font-medium text-xs sm:text-sm">AI Oracle Chat</span>
             </div>
           </div>
 
@@ -466,6 +485,101 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               <Star className="w-3.5 h-3.5 text-amber-400" />
               <span>Claim Founder • $99</span>
             </button>
+          </div>
+        </div>
+
+        {/* Payment Methods Trust Banner */}
+        <div className="flex items-center justify-center gap-6 text-xs text-slate-400 max-w-lg mx-auto pt-2 border-t border-slate-800">
+          <span className="flex items-center gap-1.5">
+            <span className="font-sans font-black italic tracking-tighter text-sm">
+              <span className="text-[#0079C1]">Pay</span><span className="text-[#003087] bg-white px-0.5 rounded-sm">Pal</span>
+            </span>
+            <span className="text-slate-300">PayPal Supported</span>
+          </span>
+          <span>•</span>
+          <span className="text-slate-300">Stripe Credit Cards</span>
+          <span>•</span>
+          <span className="text-slate-300">256-Bit SSL Encryption</span>
+        </div>
+
+        {/* Creator Direct Phone & Customer Service Card with Photo */}
+        <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-[#121528] via-[#1a1733] to-[#121528] p-5 shadow-xl max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5 text-left">
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              <img
+                src="/src/assets/images/dawn_milazzo_photo_1790974327929.jpg"
+                alt="Dawn Milazzo - Customer Service & App Creator"
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                referrerPolicy="no-referrer"
+              />
+              <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-slate-900 flex items-center justify-center text-[10px] font-black ${
+                isPremium || isCreatorAccount ? 'bg-emerald-500 text-slate-950' : 'bg-amber-500 text-slate-950'
+              }`} title={isPremium || isCreatorAccount ? 'VIP Phone Line Active' : 'Paid Subscriber Perk'}>
+                {isPremium || isCreatorAccount ? '✓' : '🔒'}
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="font-serif font-bold text-base text-amber-200">Dawn Milazzo</h4>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-950/90 border border-amber-400/60 text-amber-300 font-semibold">
+                  App Creator & Billing Lead
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300">
+                  Billing Questions Only
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/50 text-emerald-300">
+                  100% Refunds Granted
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Direct phone support with Dawn is <strong>exclusive to active paid subscribers for billing and refund questions only</strong>. Dawn does not answer divination questions by phone.
+              </p>
+              <div className="flex items-center gap-3 pt-0.5 text-xs flex-wrap">
+                {isPremium || isCreatorAccount ? (
+                  <a
+                    href={`tel:${localStorage.getItem('omni_oracle_support_phone') || '+1 (555) 792-7478'}`}
+                    className="font-mono text-amber-300 font-bold hover:underline flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1 rounded-lg"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{localStorage.getItem('omni_oracle_support_phone') || '+1 (555) 792-7478'}</span>
+                  </a>
+                ) : (
+                  <span className="font-mono text-slate-400 flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-lg">
+                    <span>🔒</span>
+                    <span>+1 (555) •••-•••• (Paid Subscribers Only)</span>
+                  </span>
+                )}
+                <span className="text-slate-500 text-[11px] font-mono">dawnmilazzo7@gmail.com</span>
+              </div>
+              <p className="text-[11px] text-amber-400/90 flex items-center gap-1 pt-0.5">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span><strong>Divination questions:</strong> Our AI Divination Scholar answers all Tarot, Runes, and Astrology in chat!</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex flex-col gap-2">
+            {isPremium || isCreatorAccount ? (
+              <a
+                href={`tel:${localStorage.getItem('omni_oracle_support_phone') || '+1 (555) 792-7478'}`}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              >
+                <PhoneCall className="w-4 h-4 text-slate-950" />
+                <span>Call for Billing</span>
+              </a>
+            ) : (
+              <button
+                onClick={() => {
+                  soundEngine.playSingingBowl(528);
+                  onOpenSubscribe();
+                }}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-amber-500 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              >
+                <Crown className="w-4 h-4 text-amber-300" />
+                <span>Subscribe to Call ($10/mo)</span>
+              </button>
+            )}
           </div>
         </div>
 
