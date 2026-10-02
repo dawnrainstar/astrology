@@ -1,0 +1,6 @@
+{
+  "name": "Divination System",
+  "description": "Interactive esoteric divination platform featuring Tarot spreads, I-Ching coin casting, Elder Futhark rune drawing, AI Scrying Mirror, Astrology & Numerology charts, and Sacred Sigil generation.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
